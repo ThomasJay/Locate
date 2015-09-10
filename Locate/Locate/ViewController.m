@@ -16,6 +16,8 @@
     
     int slotOffsets[5];
     
+    NSString *slotKeys[5];
+    
 }
 
 @property(nonatomic, strong) NSMutableArray *imageList;
@@ -69,7 +71,6 @@
     
     int height = self.view.frame.size.height;
 
-    int imageIndex = 0;
     
     for (NSDictionary *item in beaconsFound) {
         
@@ -79,12 +80,31 @@
 //        NSNumber *rssi = item[@"rssi"];
         NSNumber *distanceInFeedInt = item[@"distanceInFeet"];
         
-        [self addImage:imageIndex++ signal:height - ([distanceInFeedInt intValue] * 15) major:[major intValue] minor:[minor intValue]];
-
-        // Start over again
-        if (imageIndex > 4) {
-            imageIndex = 0;
+        NSString *key = [NSString stringWithFormat:@"%@-%@", major, minor];
+        
+        int slotNumber = 0;
+        
+        for (int i=0;i<5;i++) {
+            NSString *slotKey = slotKeys[i];
+            
+            // Check if its not null to see if its the current key
+            if (slotKey != nil) {
+                if ([slotKey isEqual:key]) {
+                    slotNumber = i;
+                    break;
+                }
+            }
+            else {
+                // If we have an empty slot and have not found this key, use this slot
+                slotKeys[i] = key;
+                slotNumber = i;
+                break;
+            }
         }
+        
+        
+        [self addImage:slotNumber signal:height - ([distanceInFeedInt intValue] * 15) major:[major intValue] minor:[minor intValue]];
+
         
     }
     
